@@ -6,6 +6,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.workday.webclient.*;
 import java.io.IOException;
+import java.util.Calendar;
+
 import org.apache.log4j.Logger;
 
 public class AuthServiceTests {
@@ -31,11 +33,14 @@ public class AuthServiceTests {
 		client.addHeader("Authorization", "ID " + token);
 		JsonResponse verifyResp = client.get("http://localhost:12766/auth-server/services/super/api/v1/token/verify");
 		boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
+		long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
 		log.info("tokenIsValid: " + tokenIsValid);
+		log.info("tokenExpiresAt: " + tokenExpiresAt);
+		log.info("Time is: " + getTimestamp());
 		assertTrue(tokenIsValid);
 	}
 
-	@Ignore("Slow test") @Test
+	@Test
 	public void tokenShouldBeInvalidAfterThreeMin() throws JsonProcessingException, IOException {
 		JsonResponse resp = requestToken();
 		String token = resp.getJsonString();
@@ -45,7 +50,10 @@ public class AuthServiceTests {
 		new Stopwatch(4 * SECONDS_PER_MINUTE);
 		JsonResponse verifyResp = client.get("http://localhost:12766/auth-server/services/super/api/v1/token/verify");
 		boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
+		long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
 		log.info("tokenIsValid: " + tokenIsValid);
+		log.info("tokenExpiresAt: " + tokenExpiresAt);
+		log.info("Time is: " + getTimestamp());
 		assertFalse(tokenIsValid);
 	}
 
@@ -63,5 +71,9 @@ public class AuthServiceTests {
 		client.addBodyParameter("remote-ip-address", "127.0.0.1");
 
 		return client.post("http://localhost:12766/auth-server/services/super/api/v1/token");
+	}
+
+	private long getTimestamp() {
+		return Calendar.getInstance().getTimeInMillis() / 1000;
 	}
 }
