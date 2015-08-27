@@ -9,8 +9,7 @@ public class Stopwatch {
 	public Stopwatch(int seconds) {
 		systemTime = new Date();
 		long offset = systemTime.getTime() + (seconds * MILLISECONDS_PER_SECOND);
-		System.out.println("Task scheduled at: " + systemTime.getTime());
-		System.out.println("Wait until: " + offset);
+		System.out.println("Check on task at: " + offset);
 		while (systemTime.getTime() < offset) {
 			systemTime = new Date();
 		}

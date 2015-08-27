@@ -41,8 +41,8 @@ public class AuthServiceTests {
 		boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
 		long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
 		log.info("tokenIsValid: " + tokenIsValid);
-		log.info("tokenExpiresAt: " + tokenExpiresAt);
-		log.info("Time is: " + getTimestamp());
+		log.info(tokenExpiresAt + " : tokenExpiration");
+		log.info(getTimestamp() + " : currentTimeInSeconds");
 		assertTrue(tokenIsValid);
 	}
 
@@ -58,8 +58,8 @@ public class AuthServiceTests {
 		boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
 		long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
 		log.info("tokenIsValid: " + tokenIsValid);
-		log.info("tokenExpiresAt: " + tokenExpiresAt);
-		log.info("Time is: " + getTimestamp());
+		log.info(tokenExpiresAt + " : tokenExpiration");
+		log.info(getTimestamp() + " : currentTimeInSeconds");
 		assertFalse(tokenIsValid);
 	}
 
@@ -78,8 +78,8 @@ public class AuthServiceTests {
 			tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
 
 			log.info("tokenIsValid: " + tokenIsValid);
-			log.info("tokenExpiresAt: " + tokenExpiresAt);
-			log.info("Time is: " + getTimestamp());
+			log.info(tokenExpiresAt + " : tokenExpiration");
+			log.info(getTimestamp() + " : currentTimeInSeconds");
 			new Stopwatch(1 * SECONDS_PER_MINUTE);
 		}
 	}
