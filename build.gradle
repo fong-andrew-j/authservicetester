@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.5.RELEASE")        
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.5.RELEASE")
     }
 }
 
@@ -24,15 +24,19 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter")
-    compile("org.springframework:spring-web")
-    compile("com.fasterxml.jackson.core:jackson-databind")
-    compile("org.projectlombok:lombok:1.16.2")
-    compile("commons-codec:commons-codec:1.10")    
-    testCompile("junit:junit")
+    compile('org.springframework.boot:spring-boot-starter:1.2.5.RELEASE')
+    compile('org.springframework:spring-web:1.2.6')
+    compile('com.fasterxml.jackson.core:jackson-core:2.6.1')
+    compile('com.fasterxml.jackson.core:jackson-databind:2.6.1')
+    compile('com.fasterxml.jackson.core:jackson-annotations:2.6.1')
+    compile('org.projectlombok:lombok:1.16.2')
+    compile('commons-codec:commons-codec:1.10')
+    testCompile('junit:junit:4.12')
     compile files('libs/rest-webclient-0.1.0.jar')
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+    gradleVersion = '2.6'
 }
+
+mainClassName = 'com.workday.authservertester.TestRunner'
