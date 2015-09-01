@@ -48,7 +48,7 @@ public class AuthServiceTests {
         assertTrue(tokenIsValid);
     }
 
-    @Test
+    @Ignore @Test
     public void tokenShouldBeInvalidAfterThreeMin() throws JsonProcessingException, IOException {
         JsonResponse resp = requestToken();
         String token = resp.getJsonString();
@@ -65,7 +65,7 @@ public class AuthServiceTests {
         assertFalse(tokenIsValid);
     }
 
-    @Test
+    @Ignore @Test
     public void tokenExpirationTimer() throws JsonProcessingException, IOException {
         JsonResponse resp = requestToken();
         String token = resp.getJsonString();
@@ -118,6 +118,24 @@ public class AuthServiceTests {
         assertEquals(new BigInteger("1440454049120"), new BigInteger(resp.returnKeyValue(keys)));
 
         keys = new String[] {"body", "jti"};
+        assertTrue(isValidToken(resp.returnKeyValue(keys)));
+
+        keys = new String[] {"body", "channel"};
+        assertEquals("UI", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "auth_type"};
+        assertEquals("UniversalPassword", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "sys_acct_typ"};
+        assertEquals("N", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "tenant"};
+        assertEquals("super", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "tokenType"};
+        assertEquals("Identity", resp.returnKeyValue(keys));
+
+        keys = new String[] {"signature"};
         assertTrue(isValidToken(resp.returnKeyValue(keys)));
     }
 
