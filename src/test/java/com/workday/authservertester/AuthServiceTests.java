@@ -8,8 +8,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.workday.webclient.*;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Calendar;
-import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
@@ -27,9 +27,9 @@ public class AuthServiceTests {
     @Test
     public void grantToken() throws InterruptedException {
         JsonResponse resp = requestToken();
+        log.debug("token: " + resp.getJsonString());
         assertEquals(resp.getStatus().toString(), "200");
-        System.out.println(resp.getJsonString());
-        assertTrue(resp.getJsonString().matches("^(\\w|-|\\.)*$")); // matches a-z A-Z 0-9 _ - .
+        assertTrue(isValidToken(resp.getJsonString()));
     }
 
     @Test
@@ -43,12 +43,12 @@ public class AuthServiceTests {
         boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
         long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
         log.info("tokenIsValid: " + tokenIsValid);
-        log.info(tokenExpiresAt + " : tokenExpiration");
-        log.info(getTimestamp() + " : currentTimeInSeconds");
+        log.debug(tokenExpiresAt + " : tokenExpiration");
+        log.debug(getTimestamp() + " : currentTimeInSeconds");
         assertTrue(tokenIsValid);
     }
 
-    @Ignore @Test
+    @Test
     public void tokenShouldBeInvalidAfterThreeMin() throws JsonProcessingException, IOException {
         JsonResponse resp = requestToken();
         String token = resp.getJsonString();
@@ -60,17 +60,17 @@ public class AuthServiceTests {
         boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
         long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
         log.info("tokenIsValid: " + tokenIsValid);
-        log.info(tokenExpiresAt + " : tokenExpiration");
-        log.info(getTimestamp() + " : currentTimeInSeconds");
+        log.debug(tokenExpiresAt + " : tokenExpiration");
+        log.debug(getTimestamp() + " : currentTimeInSeconds");
         assertFalse(tokenIsValid);
     }
 
-    @Ignore @Test
+    @Test
     public void tokenExpirationTimer() throws JsonProcessingException, IOException {
         JsonResponse resp = requestToken();
         String token = resp.getJsonString();
         boolean tokenIsValid = true;
-        long tokenExpiresAt;
+        long tokenExpiresAt = 0;
         client.addHeader("Authorization", "ID " + token);
 
         JsonResponse verifyResp;
@@ -80,22 +80,53 @@ public class AuthServiceTests {
             tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
 
             log.info("tokenIsValid: " + tokenIsValid);
-            log.info(tokenExpiresAt + " : tokenExpiration");
-            log.info(getTimestamp() + " : currentTimeInSeconds");
+            log.debug(tokenExpiresAt + " : tokenExpiration");
+            log.debug(getTimestamp() + " : currentTimeInSeconds");
             new Stopwatch(1 * SECONDS_PER_MINUTE);
         }
+        assertTrue(getTimestamp() - tokenExpiresAt <= 180);
     }
 
     @Test
-    public void tokenEndpointShouldReturnInfo() throws IOException {
+    public void tokenEndpointShouldReturnValidInfo() throws IOException {
         client.addHeader("Authorization", "ID " + OLD_TOKEN);
         JsonResponse resp = client.get("http://localhost:12766/auth-server/services/super/api/v1/token");
-        System.out.println(resp.getJsonString());
-        HashMap<String, Object> jsonMap = resp.returnJsonMap(resp.getJsonString());
-        System.out.println(jsonMap.get("header"));
+        log.debug(resp.getJsonString());
+        String[] keys;
+        keys = new String[] {"header", "alg"};
+        assertEquals("RS512", resp.returnKeyValue(keys));
+
+        keys = new String[] {"header", "kid"};
+        assertEquals("AS_node1_08242015084648500", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "iss"};
+        assertEquals("OMS", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "sub"};
+        assertEquals("SuperUser", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "aud"};
+        assertEquals("wd", resp.returnKeyValue(keys));
+
+        keys = new String[] {"body", "exp"};
+        assertEquals(1440454229, Long.parseLong(resp.returnKeyValue(keys)));
+
+        keys = new String[] {"body", "iat"};
+        assertEquals(1440454049, Long.parseLong(resp.returnKeyValue(keys)));
+
+        keys = new String[] {"body", "auth_time"};
+        assertEquals(new BigInteger("1440454049120"), new BigInteger(resp.returnKeyValue(keys)));
+
+        keys = new String[] {"body", "jti"};
+        assertTrue(isValidToken(resp.returnKeyValue(keys)));
     }
 
+    /**
+     * Posts to the token endpoint to request a new token for a user
+     * @return
+     */
     private JsonResponse requestToken() {
+        // TODO: Parametertize this for username and password
         client.addBodyParameter("request-originator", "UI");
         client.addBodyParameter("username", "superuser");
         client.addBodyParameter("password", "Da7@+%mfbMErS7at");
@@ -104,7 +135,20 @@ public class AuthServiceTests {
         return client.post("http://localhost:12766/auth-server/services/super/api/v1/token");
     }
 
+    /**
+     * Returns current epoch timestamp in seconds
+     * @return
+     */
     private long getTimestamp() {
         return Calendar.getInstance().getTimeInMillis() / 1000;
+    }
+
+    /**
+     * Checks if token is a string that consists of (a-zA-Z0-9_-.)
+     * @param token
+     * @return
+     */
+    private boolean isValidToken(String token) {
+        return (token.matches("^(\\w|-|\\.)*$"));
     }
 }

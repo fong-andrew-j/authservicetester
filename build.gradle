@@ -32,7 +32,7 @@ dependencies {
     compile('org.projectlombok:lombok:1.16.2')
     compile('commons-codec:commons-codec:1.10')
     testCompile('junit:junit:4.12')
-    compile files('libs/rest-webclient-0.1.0.jar')
+    compile files('libs/rest-webclient-0.2.0.jar')
 }
 
 task wrapper(type: Wrapper) {
