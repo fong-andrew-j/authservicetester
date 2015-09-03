@@ -55,7 +55,7 @@ public class AuthServiceTests {
         log.debug("Token: " + token);
 
         client.addHeader("Authorization", "ID " + token);
-        new Stopwatch(4 * SECONDS_PER_MINUTE);
+        Stopwatch.start(4 * SECONDS_PER_MINUTE);
         JsonResponse verifyResp = client.get("http://localhost:12766/auth-server/services/super/api/v1/token/verify");
         boolean tokenIsValid = Boolean.parseBoolean(verifyResp.returnKeyValue("valid"));
         long tokenExpiresAt = Long.parseLong(verifyResp.returnKeyValue("expirationTime"));
@@ -82,7 +82,7 @@ public class AuthServiceTests {
             log.info("tokenIsValid: " + tokenIsValid);
             log.debug(tokenExpiresAt + " : tokenExpiration");
             log.debug(getTimestamp() + " : currentTimeInSeconds");
-            new Stopwatch(1 * SECONDS_PER_MINUTE);
+            Stopwatch.start(1 * SECONDS_PER_MINUTE);
         }
         assertTrue(getTimestamp() - tokenExpiresAt <= 180);
     }
